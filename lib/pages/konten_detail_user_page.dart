@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../widgets/admin_drawer.dart';
-import '../widgets/admin_appbar.dart';
+import '../widgets/user_drawer.dart';
+import '../widgets/user_appbar.dart';
 
 import '../widgets/profile_panel.dart';
 import 'login_page.dart';
@@ -33,7 +33,7 @@ class KontenDetailPage extends StatefulWidget {
   @override
   State<KontenDetailPage> createState() => _KontenDetailPage();
 }
-
+  
 class _KontenDetailPage extends State<KontenDetailPage> {
   String username = '';
   String email = '';
@@ -53,7 +53,7 @@ class _KontenDetailPage extends State<KontenDetailPage> {
     int userId = prefs.getInt('id_user') ?? 0;
     role = prefs.getString('role') ?? '';
 
-    if (role != 'admin') {
+    if (role != 'user') {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => LoginPage()),
@@ -76,43 +76,93 @@ class _KontenDetailPage extends State<KontenDetailPage> {
       });
     }
   }
+  
+  void showBuyModal(BuildContext context, Map<String, dynamic> konten) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (_) {
+        final price = konten['price'] ?? 0;
 
-  Future<void> updateStatus(String newStatus) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 15),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
 
-    int idArtwork = int.tryParse(widget.konten['id_artwork'].toString()) ?? 0;
+              const Text(
+                "Konfirmasi Pembelian",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 15),
 
-    final result = await ApiService.updateArtworkStatus(
-      token: token,
-      idArtwork: idArtwork,
-      status: newStatus,
+              Text("Judul: ${konten['title']}", style: const TextStyle(fontSize: 15)),
+              Text("Harga: Rp ${price.toString()}", style: const TextStyle(fontSize: 15)),
+              const SizedBox(height: 20),
+
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () => submitOrder(konten),
+                child: const Center(
+                  child: Text(
+                    "Ajukan Pembelian",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  Future<void> submitOrder(Map<String, dynamic> konten) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final buyerId = prefs.getInt('id_user') ?? 0;
+    final token = prefs.getString('token') ?? '';
+
+    final payload = {
+      "id_buyer": buyerId.toString(),
+      "id_artwork": konten['id_artwork'].toString(),
+      "total_price": konten['price'].toString(),
+    };
+
+    final result = await ApiService.createOrder(token, payload);
 
     if (!mounted) return;
 
-    if (result['status'] == true) {
+    Navigator.pop(context);
+
+    if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Status berhasil diperbarui menjadi: $newStatus"),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text("Order berhasil diajukan!")),
       );
-
-      if (widget.reloadData != null) {
-        await widget.reloadData!();
-      }
-
-      Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Gagal mengubah status"),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text("Gagal mengajukan order")),
       );
     }
   }
+
 
   void showUploaderModal(BuildContext context, Map<String, dynamic> data) {
     showDialog(
@@ -190,7 +240,7 @@ class _KontenDetailPage extends State<KontenDetailPage> {
     }
 
     return Scaffold(
-      drawer: AdminDrawer(
+      drawer: UserDrawer(
         currentMenu: widget.currentMenu,
         username: username,
         avatarUrl: avatarUrl,
@@ -198,7 +248,7 @@ class _KontenDetailPage extends State<KontenDetailPage> {
         onItemSelected: (_) {},
       ),
 
-      appBar: AdminAppBar(
+      appBar: UserAppBar(
         title: "Detail Konten",
         username: username,
         avatarUrl: avatarUrl,
@@ -317,27 +367,6 @@ class _KontenDetailPage extends State<KontenDetailPage> {
                   ),
                 ),
               ),
-
-               /// KANAN: ACTION BUTTON (X / V)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  FloatingActionButton(
-                    heroTag: "rejectBtn",
-                    backgroundColor: Colors.red,
-                    mini: true,
-                    onPressed: () => updateStatus("rejected"),
-                    child: const Icon(Icons.close, color: Colors.white, size: 18),
-                  ),
-                  FloatingActionButton(
-                    heroTag: "accBtn",
-                    backgroundColor: Colors.green,
-                    mini: true,
-                    onPressed: () => updateStatus("published"),
-                    child: const Icon(Icons.check, color: Colors.white, size: 18),
-                  ),
-                ],
-              ),
             ],
           ),
           
@@ -395,8 +424,27 @@ class _KontenDetailPage extends State<KontenDetailPage> {
               );
             },
           ),
-
           const SizedBox(height: 20),
+
+          /// 🔥 SECTION 7 – BUY BUTTON (Jika Available)
+if (konten['status'] == "available" || konten['status'] == "published") ...[
+  const SizedBox(height: 20),
+
+      ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blueAccent,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
+        label: const Text(
+          "Beli Artwork",
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        onPressed: () => showBuyModal(context, konten),
+      ),
+    ],
+
         ],
       ),
     );

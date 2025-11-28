@@ -288,4 +288,16 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  static Future<dynamic> createOrder(String token, Map<String, dynamic> data) async {
+    final url = Uri.parse("$baseUrl/order/create");
+
+    final response = await http.post(
+      url,
+      headers: {"Authorization": "Bearer $token"},
+      body: data,
+    );
+
+    return jsonDecode(response.body);
+  }
+
 }

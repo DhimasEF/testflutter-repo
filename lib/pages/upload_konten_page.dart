@@ -58,6 +58,10 @@ class _ImageSlideshowState extends State<ImageSlideshow> {
   }
 }
 
+String capitalize(String text) {
+  if (text.isEmpty) return text;
+  return text[0].toUpperCase() + text.substring(1).toLowerCase();
+}
 
 
 // ============================================================
@@ -206,134 +210,164 @@ class _UploadKontenPageState extends State<UploadKontenPage> {
           .toList();
     }
 
-    double elevation = 4;
+    String status = (item['status'] ?? 'draft').toString().toLowerCase();
+    String price = item['price']?.toString() ?? "Rp -";
 
-    return StatefulBuilder(
-      builder: (context, setHover) {
-        return MouseRegion(
-          onEnter: (_) => setHover(() => elevation = 12),
-          onExit: (_) => setHover(() => elevation = 4),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            margin: const EdgeInsets.only(bottom: 20),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withOpacity(0.2),
-                  blurRadius: elevation,
-                  spreadRadius: elevation / 6,
-                )
-              ],
-            ),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => KontenDetailPage(
-                      konten: Map<String, dynamic>.from(item),   // FIX UTAMA
-                      username: username,
-                      selectedIndex: 1,
-                      currentMenu: "Upload Konten",
-                      avatarUrl: avatarUrl,
-                    ),
-                  ),
-                );
-              },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: Column(
-                  children: [
-                    // -------------------------------------------
-                    // GAMBAR + OVERLAY + TEXT
-                    // -------------------------------------------
-                    SizedBox(
-                      height: 210,
-                      width: double.infinity,
-                      child: Stack(
-                        children: [
-                          images.isNotEmpty
-                              ? ImageSlideshow(images: images)
-                              : Container(color: Colors.grey.shade300),
+    // Warna badge berdasarkan status
+    // Pilih warna
+    Color statusColor = {
+      "published": Colors.green,
+      "draft": Colors.grey,
+      "rejected": Colors.red,
+      "sold": Colors.orange,
+    }[status] ?? Colors.grey;
 
-                          Container(
-                            color: Colors.black.withOpacity(0.35),
-                          ),
+    // Pilih icon
+    IconData statusIcon = {
+      "published": Icons.check_circle,
+      "draft": Icons.pending,
+      "rejected": Icons.close,
+      "sold": Icons.shopping_bag,
+    }[status] ?? Icons.help;
 
-                          Positioned(
-                            left: 14,
-                            bottom: 14,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item["title"] ?? "(tanpa judul)",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  "${images.length} images",
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.85),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Stack(
+        children: [
+          // Background image
+          Positioned.fill(
+            child: images.isNotEmpty
+                ? Image.network(images[0], fit: BoxFit.cover)
+                : Container(color: Colors.grey.shade300),
+          ),
 
-                          Positioned(
-                            right: 10,
-                            top: 10,
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.black38,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.open_in_new,
-                                color: Colors.white,
-                                size: 22,
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-
-                    // -------------------------------------------
-                    // INFO BAWAH
-                    // -------------------------------------------
-                    Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(item['status'] ?? "-"),
-                          Text(
-                            item['created_at']?.toString() ?? "",
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+          // Gradient overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.70),
                   ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
               ),
             ),
           ),
-        );
-      },
+
+          // ======= INFORMASI BAWAH =======
+          Positioned(
+            left: 10,
+            right: 10,
+            bottom: 10,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Judul
+                Text(
+                  item["title"] ?? "(tanpa judul)",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                // ICON GAMBAR + STATUS BADGE
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // jumlah gambar
+                    Row(
+                      children: [
+                        Icon(Icons.image, color: Colors.white70, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          images.length.toString(),
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Badge status
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            statusIcon,
+                            size: 11,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            capitalize(status),        // ← kapital huruf awal
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.italic,   // ← italic
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+
+                const SizedBox(height: 4),
+
+                // HARGA
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    item["price"] != null ? "Rp ${item['price']}" : "Rp -",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Icon open
+          Positioned(
+            right: 10,
+            top: 10,
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                color: Colors.white24,
+              ),
+              child: const Icon(
+                Icons.open_in_new,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
-
 
 
   // ============================================================
@@ -342,22 +376,42 @@ class _UploadKontenPageState extends State<UploadKontenPage> {
   Widget buildContentList() {
     final list = filter == "mine" ? myContent : allContent;
 
-    if (loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (loading) return const Center(child: CircularProgressIndicator());
+    if (list.isEmpty) return const Center(child: Text("Belum ada konten"));
 
-    if (list.isEmpty) {
-      return const Center(child: Text("Belum ada konten"));
-    }
-
-    return ListView.builder(
+    return GridView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: list.length,
-      itemBuilder: (_, i) => buildContentItem(list[i]),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,            // jumlah kolom
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.78,       // biar proporsional seperti card
+      ),
+      itemBuilder: (_, i) {
+        final item = list[i];
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => KontenDetailPage(
+                  konten: item,
+                  currentMenu: 'konten',
+                  selectedIndex: selectedIndex,
+                  username: username,
+                  avatarUrl: avatarUrl,
+                  data: data,
+                  reloadData: loadUserData,
+                ),
+              ),
+            );
+          },
+          child: buildContentItem(item),
+        );
+      },
     );
   }
-
-
 
   // ============================================================
   //  PAGE BUILD
