@@ -85,7 +85,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     final base64Image = reader.result as String;
 
     final response = await http.post(
-      Uri.parse('http://192.168.6.16/flutterapi_app/profil/upload_avatar_web'),
+      Uri.parse('http://192.168.6.16:3000/profil/upload-avatar'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'id_user': userId,

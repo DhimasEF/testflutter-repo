@@ -356,7 +356,7 @@ class _DetailTransaksiOrderPageState extends State<DetailTransaksiOrderPage> {
             ...items.map((art) {
               final img = art['images'].isNotEmpty
                   ? ApiService.baseUrlimage +
-                      "uploads/artworks/preview/" +
+                      "/uploads/artworks/preview/" +
                       art['images'][0]
                   : null;
 

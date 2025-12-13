@@ -179,7 +179,7 @@ class _KontenDetailPage extends State<KontenDetailPage> {
     if (konten["images"] is List) {
       images = konten["images"]
           .map((e) =>
-              "http://192.168.6.16/flutterapi_app/uploads/artworks/preview/${e['image_url']}")
+              "http://192.168.6.16:3000/uploads/artworks/preview/${e['preview_url']}")
           .toList();
     }
 

@@ -206,7 +206,7 @@ class _UploadKontenPageState extends State<UploadKontenPage> {
     if (item["images"] != null && item["images"] is List) {
       images = (item["images"] as List)
           .map((e) =>
-              "http://192.168.6.16/flutterapi_app/uploads/artworks/preview/${e['image_url']}")
+              "http://192.168.6.16:3000/uploads/artworks/preview/${e['preview_url']}")
           .toList();
     }
 

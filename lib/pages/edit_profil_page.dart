@@ -34,7 +34,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     try {
       final idUser = widget.userData['id_user'];
       final response = await http.put(
-        Uri.parse('http://192.168.6.16/flutterapi_app/index.php/profil/update/$idUser'),
+        Uri.parse('http://192.168.6.16:3000/profil/update/$idUser'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': _usernameController.text,

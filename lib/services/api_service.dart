@@ -6,9 +6,9 @@ import 'package:mime/mime.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.6.16/flutterapi_app/index.php';
-  static const String baseUrlimage = 'http://192.168.6.16/flutterapi_app/';
-  static const String avatarBaseUrl = "${baseUrlimage}uploads/avatar/";
+  static const String baseUrl = 'http://192.168.6.16:3000';
+  static const String baseUrlimage = 'http://192.168.6.16:3000';
+  static const String avatarBaseUrl = "${baseUrlimage}/uploads/avatar/";
   // ============================
   // LOGIN
   // ============================
@@ -17,10 +17,13 @@ class ApiService {
     String password,
   ) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/login/auth'),
+      Uri.parse('$baseUrl/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'username': username, 'password': password}),
     );
+
+    print(response.body);
+
     return jsonDecode(response.body);
   }
 
@@ -32,7 +35,7 @@ class ApiService {
     String email,
     String password,
   ) async {
-    final url = Uri.parse('$baseUrl/register/auth');
+    final url = Uri.parse('$baseUrl/auth/register');
 
     final response = await http.post(
       url,
@@ -56,7 +59,7 @@ class ApiService {
   }) async {
     final url = userId != null
         ? '$baseUrl/profil/get/$userId'
-        : '$baseUrl/dashboard/data';
+        : '$baseUrl/api/user/data';
 
     final resp = await http.get(
       Uri.parse(url),
@@ -210,34 +213,16 @@ class ApiService {
       throw Exception("Failed: ${response.statusCode}");
     }
 
-    dynamic json;
-    try {
-      json = jsonDecode(response.body);
-    } catch (e) {
-      throw Exception("Response bukan JSON valid");
+    final json = jsonDecode(response.body);
+
+    // =============== FIX PENTING ===============
+    if (json is Map && json['data'] is List) {
+      return List<Map<String, dynamic>>.from(json['data']);
     }
 
-    // Jika API balas langsung list
-    if (json is List) {
-      return List<Map<String, dynamic>>.from(json);
-    }
-
-    // Jika API balas object tapi isinya list
-    if (json is Map) {
-      if (json.containsKey('data') && json['data'] is List) {
-        return List<Map<String, dynamic>>.from(json['data']);
-      }
-
-      if (json.containsKey('artworks') && json['artworks'] is List) {
-        return List<Map<String, dynamic>>.from(json['artworks']);
-      }
-
-      // Jika API balas objek kosong → return list kosong
-      return [];
-    }
-
-    throw Exception("API tidak mengembalikan list");
+    return [];
   }
+
 
   // ============================
   // GET ALL ARTWORK (FINAL FIX)
@@ -356,7 +341,7 @@ class ApiService {
     final token = prefs.getString('token') ?? '';
 
     final response = await http.get(
-      Uri.parse('$baseUrl/order/my?id_buyer=$idBuyer'),
+      Uri.parse('$baseUrl/order/my-buyer?id_buyer=$idBuyer'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
@@ -391,14 +376,14 @@ class ApiService {
   }
   // ApiService.dart
   static Future<Map<String, dynamic>> getCreatorOrders(int idCreator) async {
-    final url = Uri.parse("$baseUrl/order/my_as_creator?id_creator=$idCreator");
+    final url = Uri.parse("$baseUrl/order/my-creator?id_creator=$idCreator");
 
     final response = await http.get(url);
     return jsonDecode(response.body);
   } 
   // ApiService.dart
   static Future<Map<String, dynamic>> getMyAllOrders(int idBuyer) async {
-    final url = Uri.parse("$baseUrl/order/my_as_buyer?id_buyer=$idBuyer");
+    final url = Uri.parse("$baseUrl/order/my-buyer?id_buyer=$idBuyer");
 
     final response = await http.get(url);
     return jsonDecode(response.body);

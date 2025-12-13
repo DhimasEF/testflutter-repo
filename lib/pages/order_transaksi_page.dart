@@ -111,11 +111,17 @@ class _OrderTransaksiPageState extends State<OrderTransaksiPage> {
         if (!map.containsKey(orderId)) {
           map[orderId] = {
             "id_order": item['id_order'],
+            "id_buyer": item['id_buyer'],
             "order_status": item['order_status'],
+            "payment_status": item['payment_status'], // 🔥 FIX
+            "total_price": item['total_price'],
+            "total_paid": item['total_paid'],
+            "note": item['note'],
             "created_at": item['created_at'],
-            "items": []
+            "items": [],
           };
         }
+
 
         map[orderId]["items"].add({
           "id_artwork": item["id_artwork"],
@@ -233,7 +239,7 @@ class _OrderTransaksiPageState extends State<OrderTransaksiPage> {
                           /// ITEM LIST
                           ...items.map((art) {
                             final img = art['images'].isNotEmpty
-                                ? ApiService.baseUrlimage + "uploads/artworks/preview/" + art['images'][0]
+                                ? ApiService.baseUrlimage + "/uploads/artworks/preview/" + art['images'][0]
                                 : null;
 
                             return Container(

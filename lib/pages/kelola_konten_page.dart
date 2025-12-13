@@ -215,7 +215,7 @@ class _KelolaKontenPageState extends State<KelolaKontenPage> {
                             String? thumb;
 
                             if (images.isNotEmpty && images[0] is Map) {
-                              thumb = images[0]["image_url"];
+                              thumb = images[0]["preview_url"];
                             }
 
                             return Card(
@@ -226,7 +226,7 @@ class _KelolaKontenPageState extends State<KelolaKontenPage> {
                                     ? ClipRRect(
                                         borderRadius: BorderRadius.circular(6),
                                         child: Image.network(
-                                          "http://192.168.6.16/flutterapi_app/uploads/artworks/preview/$thumb",
+                                          "http://192.168.6.16:3000/uploads/artworks/preview/$thumb",
                                           width: 70,
                                           height: 70,
                                           fit: BoxFit.cover,
