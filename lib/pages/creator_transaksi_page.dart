@@ -13,7 +13,8 @@ class CreatorTransaksiPage extends StatefulWidget {
   final String? avatarUrl;
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
-  final Future<void> Function(int)? uploadAvatarWeb;
+  //final Future<void> Function(int)? uploadAvatarWeb;
+  final Future<void> Function(int)? uploadAvatarMobile;
 
   const CreatorTransaksiPage({
     super.key,
@@ -21,11 +22,12 @@ class CreatorTransaksiPage extends StatefulWidget {
     this.avatarUrl,
     this.data,
     this.reloadData,
-    this.uploadAvatarWeb,
+    //this.uploadAvatarWeb,
+    this.uploadAvatarMobile,
   });
 
   @override
-  _CreatorTransaksiPageState createState() => _CreatorTransaksiPageState();
+  State<CreatorTransaksiPage> createState() => _CreatorTransaksiPageState();
 }
 
 class _CreatorTransaksiPageState extends State<CreatorTransaksiPage> {
@@ -36,30 +38,26 @@ class _CreatorTransaksiPageState extends State<CreatorTransaksiPage> {
   Map<String, dynamic>? data;
 
   bool isLoadingOrders = true;
-
-  /// hasil akhir → list order yg sudah dikelompokkan
   List<Map<String, dynamic>> groupedOrders = [];
-
   int selectedIndex = 2;
 
   @override
   void initState() {
     super.initState();
-    loadUserData().then((_) {
-      loadOrders();
-    });
+    loadUserData().then((_) => loadOrders());
   }
 
   // ============================
   // LOAD USER DATA
   // ============================
   Future<void> loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
-    int userId = prefs.getInt('id_user') ?? 0;
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final userId = prefs.getInt('id_user') ?? 0;
     role = prefs.getString('role') ?? '';
 
     if (role != 'creator') {
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => LoginPage()),
@@ -86,62 +84,66 @@ class _CreatorTransaksiPageState extends State<CreatorTransaksiPage> {
   }
 
   // ============================
-  // LOAD ORDERS + GROUP BY ORDER
+  // LOAD & GROUP ORDERS
+  // ============================
+  // ============================
+  // LOAD & GROUP ORDERS (FIX)
   // ============================
   Future<void> loadOrders() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int userId = prefs.getInt('id_user') ?? 0;
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('id_user') ?? 0;
 
     final result = await ApiService.getCreatorOrders(userId);
 
     if (!mounted) return;
 
-    if (result['status'] == true) {
-      List<dynamic> rawData = result['data'];
+    if (result['status'] == true && result['data'] is List) {
+      final List rawData = result['data'];
+      final Map<String, Map<String, dynamic>> map = {};
 
-      /// GROUP BY id_order
-      Map<String, dynamic> map = {};
-
-      for (var item in rawData) {
+      for (final item in rawData) {
         final orderId = item['id_order'].toString();
 
-        // Parse images
-        dynamic rawImg = item['images'];
-        List<String> parsedImages = [];
+        // ✅ FIX UTAMA ADA DI SINI
+        List<String> images = [];
 
-        if (rawImg is String) {
-          parsedImages = rawImg.isNotEmpty ? rawImg.split(",") : [];
-        } else if (rawImg is List) {
-          parsedImages = rawImg.map((e) => e.toString()).toList();
+        if (item['images'] != null) {
+          if (item['images'] is String) {
+            final str = item['images'].toString();
+            images = str.isNotEmpty ? str.split(',') : [];
+          } else if (item['images'] is List) {
+            images = (item['images'] as List)
+                .map((e) => e.toString())
+                .toList();
+          }
         }
 
-        if (!map.containsKey(orderId)) {
-          map[orderId] = {
-            "id_order": item['id_order'],
-            "order_status": item['order_status'],
-            "created_at": item['created_at'],
-            "items": []
-          };
-        }
+        map.putIfAbsent(orderId, () => {
+          "id_order": item['id_order'],
+          "order_status": item['order_status'] ?? "-",
+          "payment_status": item['payment_status'], // optional
+          "note": item['note'], // 🔥 INI KUNCI UTAMA
+          "created_at": item['created_at'] ?? "-",
+          "items": <Map<String, dynamic>>[],
+        });
 
-        map[orderId]["items"].add({
-          "id_artwork": item["id_artwork"],
-          "title": item["title"],
-          "price": item["price"],
-          "images": parsedImages
+        map[orderId]!['items'].add({
+          "id_artwork": item['id_artwork'],
+          "title": item['title'] ?? "-",
+          "price": item['price'] ?? 0,
+          "images": images, // ← SUDAH List<String>
         });
       }
 
-      // ✔ pindahkan setState di luar loop!
       setState(() {
-        groupedOrders = List<Map<String, dynamic>>.from(map.values);
+        groupedOrders = map.values.toList();
         isLoadingOrders = false;
       });
-
     } else {
       setState(() => isLoadingOrders = false);
     }
   }
+
 
   // ============================
   // UI
@@ -158,7 +160,8 @@ class _CreatorTransaksiPageState extends State<CreatorTransaksiPage> {
           avatarUrl: avatarUrl,
           data: data ?? {},
           reloadData: loadUserData,
-          uploadAvatarWeb: widget.uploadAvatarWeb,
+          //uploadAvatarWeb: widget.uploadAvatarWeb,
+          uploadAvatarMobile: widget.uploadAvatarMobile,
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),
@@ -174,56 +177,51 @@ class _CreatorTransaksiPageState extends State<CreatorTransaksiPage> {
           : groupedOrders.isEmpty
               ? const Center(child: Text("Belum ada order"))
               : ListView.builder(
-                padding: const EdgeInsets.all(20),
-                itemCount: groupedOrders.length,
-                itemBuilder: (context, index) {
-                  final order = groupedOrders[index];
-                  final items = order['items'] as List;
+                  padding: const EdgeInsets.all(20),
+                  itemCount: groupedOrders.length,
+                  itemBuilder: (context, index) {
+                    final order = groupedOrders[index];
+                    final List items = order['items'];
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 18),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(18.0),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 18),
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          
-                          /// ORDER HEADER
+                          // HEADER
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 "Order #${order['id_order']}",
                                 style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold),
                               ),
-
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: Colors.blueGrey.shade50,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
-                                  order['order_status'].toString().toUpperCase(),
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
-                                  ),
+                                  order['order_status']
+                                      .toString()
+                                      .toUpperCase(),
+                                  style: const TextStyle(fontSize: 11),
                                 ),
                               )
                             ],
@@ -232,19 +230,24 @@ class _CreatorTransaksiPageState extends State<CreatorTransaksiPage> {
                           const SizedBox(height: 6),
                           Text(
                             "Tanggal: ${order['created_at']}",
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                            style: TextStyle(
+                                color: Colors.grey.shade600, fontSize: 12),
                           ),
 
                           const Divider(height: 22),
 
-                          /// ITEM LIST
+                          // ITEMS
                           ...items.map((art) {
-                            final img = art['images'].isNotEmpty
-                                ? ApiService.baseUrlimage + "uploads/artworks/preview/" + art['images'][0]
-                                : null;
+                            final List images =
+                                (art['images'] is List) ? art['images'] : [];
 
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 14),
+                            final String? img =
+                                images.isNotEmpty && images[0] != ""
+                                    ? "${ApiService.baseUrlimage ?? ""}/uploads/artworks/preview/${images[0]}"
+                                    : null;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
                               child: Row(
                                 children: [
                                   ClipRRect(
@@ -260,41 +263,35 @@ class _CreatorTransaksiPageState extends State<CreatorTransaksiPage> {
                                             width: 65,
                                             height: 65,
                                             color: Colors.grey.shade200,
-                                            child: const Icon(Icons.image_not_supported),
+                                            child: const Icon(
+                                                Icons.image_not_supported),
                                           ),
                                   ),
-
                                   const SizedBox(width: 12),
-
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           art['title'],
                                           style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                          ),
+                                              fontWeight: FontWeight.w600),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
                                           "Rp ${art['price']}",
                                           style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.green.shade700,
-                                            fontWeight: FontWeight.w500,
-                                          ),
+                                              color:
+                                                  Colors.green.shade700),
                                         ),
                                       ],
                                     ),
-                                  ),
+                                  )
                                 ],
                               ),
                             );
                           }).toList(),
-
-                          const SizedBox(height: 6),
 
                           Align(
                             alignment: Alignment.centerRight,
@@ -303,24 +300,23 @@ class _CreatorTransaksiPageState extends State<CreatorTransaksiPage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => DetailCreatorTransaksiPage(
-                                      order: order,     
-                                      idOrder: int.parse(order["id_order"].toString()),
+                                    builder: (_) =>
+                                        DetailCreatorTransaksiPage(
+                                      order: order,
+                                      idOrder: int.parse(
+                                          order['id_order'].toString()),
                                     ),
                                   ),
                                 );
                               },
                               child: const Text("Lihat Detail"),
                             ),
-                          ),
-
+                          )
                         ],
                       ),
-                    ),
-                  );
-                },
-              )
-
+                    );
+                  },
+                ),
     );
   }
 }

@@ -6,8 +6,14 @@ import 'package:mime/mime.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.6.16:3000';
-  static const String baseUrlimage = 'http://192.168.6.16:3000';
+  // static const String baseUrl = 'http://192.168.6.16:3000';
+  // static const String baseUrl = 'http://localhost:3000';
+  static const String baseUrl = 'http://192.168.137.42:3000';
+  // static const String baseUrl = 'https://murally-ultramicroscopical-mittie.ngrok-free.dev';
+  // static const String baseUrlimage = 'http://192.168.6.16:3000';
+  // static const String baseUrlimage = 'http://localhost:3000';
+  static const String baseUrlimage = 'http://192.168.137.42:3000';
+  // static const String baseUrlimage = 'https://murally-ultramicroscopical-mittie.ngrok-free.dev';
   static const String avatarBaseUrl = "${baseUrlimage}/uploads/avatar/";
   // ============================
   // LOGIN
@@ -389,29 +395,53 @@ class ApiService {
     return jsonDecode(response.body);
   } 
 
-  static Future<dynamic> uploadPaymentProof({
+  static Future<Map<String, dynamic>> uploadPaymentProof({
     required int idOrder,
     required int amount,
     required XFile file,
   }) async {
-    var uri = Uri.parse("$baseUrl/order/upload_payment");
-    var request = http.MultipartRequest("POST", uri);
+    final uri = Uri.parse("$baseUrl/order/upload-payment");
+    final request = http.MultipartRequest("POST", uri);
 
+    // field text
     request.fields["id_order"] = idOrder.toString();
     request.fields["amount"] = amount.toString();
 
+    // file (JANGAN PAKSA MIME)
     request.files.add(
-      http.MultipartFile.fromBytes(
-        "bukti",
-        await file.readAsBytes(),
-        filename: file.name,
-        contentType: MediaType("image", "jpeg"), // aman default
+      await http.MultipartFile.fromPath(
+        "bukti", // HARUS SAMA DENGAN BACKEND
+        file.path,
       ),
     );
 
-    var res = await request.send();
-    var body = await res.stream.bytesToString();
+    final res = await request.send();
+    final body = await res.stream.bytesToString();
+
+    // 🔥 WAJIB
+    if (res.statusCode != 200) {
+      throw Exception(
+        "Upload payment gagal (${res.statusCode}): $body",
+      );
+    }
 
     return jsonDecode(body);
   }
+
+  static Future<Map<String, dynamic>> acceptPayment(int idOrder) async {
+  final res = await http.post(
+    Uri.parse("$baseUrl/order/accept-payment"),
+    body: {"id_order": idOrder.toString()},
+  );
+  return jsonDecode(res.body);
+}
+
+static Future<Map<String, dynamic>> rejectPayment(int idOrder) async {
+  final res = await http.post(
+    Uri.parse("$baseUrl/order/reject-payment"),
+    body: {"id_order": idOrder.toString()},
+  );
+  return jsonDecode(res.body);
+}
+
 }

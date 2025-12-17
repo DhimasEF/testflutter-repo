@@ -6,7 +6,8 @@ Future<void> showProfilePanel(
   required String? avatarUrl,
   required Map<String, dynamic> data,
   required Future<void> Function()? reloadData,
-  required Future<void> Function(int)? uploadAvatarWeb,
+  //required Future<void> Function(int)? uploadAvatarWeb,
+  required Future<void> Function(int)? uploadAvatarMobile,
   required Widget Function(Map<String, dynamic>) editPageBuilder,
 }) {
   return showGeneralDialog(
@@ -60,7 +61,8 @@ Future<void> showProfilePanel(
                           : const AssetImage('assets/default.jpg')
                               as ImageProvider,
                     ),
-                    if (uploadAvatarWeb != null)
+                    //if (uploadAvatarWeb != null)
+                    if (uploadAvatarMobile != null)
                       Positioned(
                         bottom: 0,
                         right: 4,
@@ -70,7 +72,8 @@ Future<void> showProfilePanel(
                                 await SharedPreferences.getInstance();
                             int userId = prefs.getInt('id_user') ?? 0;
 
-                            await uploadAvatarWeb(userId);
+                            //await uploadAvatarWeb(userId);
+                            await uploadAvatarMobile(userId);
                             Navigator.pop(context);
 
                             if (reloadData != null) reloadData();

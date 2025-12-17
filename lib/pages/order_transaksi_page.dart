@@ -13,7 +13,8 @@ class OrderTransaksiPage extends StatefulWidget {
   final String? avatarUrl;
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
-  final Future<void> Function(int)? uploadAvatarWeb;
+  //final Future<void> Function(int)? uploadAvatarWeb;
+  final Future<void> Function(int)? uploadAvatarMobile;
 
   const OrderTransaksiPage({
     super.key,
@@ -21,7 +22,8 @@ class OrderTransaksiPage extends StatefulWidget {
     this.avatarUrl,
     this.data,
     this.reloadData,
-    this.uploadAvatarWeb,
+    //this.uploadAvatarWeb,
+    this.uploadAvatarMobile,
   });
 
   @override
@@ -155,7 +157,8 @@ class _OrderTransaksiPageState extends State<OrderTransaksiPage> {
           avatarUrl: avatarUrl,
           data: data ?? {},                  // <-- kasih default kosong supaya aman
           reloadData: loadUserData,          // <-- pakai function dari state
-          uploadAvatarWeb: widget.uploadAvatarWeb, // <-- ambil dari widget
+          //uploadAvatarWeb: widget.uploadAvatarWeb, // <-- ambil dari widget
+          uploadAvatarMobile: widget.uploadAvatarMobile, // <-- ambil dari widget
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),

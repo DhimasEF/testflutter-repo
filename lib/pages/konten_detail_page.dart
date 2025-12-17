@@ -16,7 +16,8 @@ class KontenDetailPage extends StatefulWidget {
   final String? avatarUrl;
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
-  final Future<void> Function(int)? uploadAvatarWeb;
+  //final Future<void> Function(int)? uploadAvatarWeb;
+  final Future<void> Function(int)? uploadAvatarMobile;
 
   const KontenDetailPage({
     super.key,
@@ -27,7 +28,8 @@ class KontenDetailPage extends StatefulWidget {
     this.avatarUrl,
     this.data,
     this.reloadData,
-    this.uploadAvatarWeb,
+    //this.uploadAvatarWeb,
+    this.uploadAvatarMobile,
   });
 
   @override
@@ -142,7 +144,10 @@ class _KontenDetailPage extends State<KontenDetailPage> {
     if (konten["images"] is List) {
       images = konten["images"]
           .map((e) =>
-              "http://192.168.6.16:3000/uploads/artworks/preview/${e['preview_url']}")
+              // "http://192.168.6.16:3000/uploads/artworks/preview/${e['preview_url']}")
+              // "https://murally-ultramicroscopical-mittie.ngrok-free.dev/uploads/artworks/preview/${e['preview_url']}")
+              // "http://localhost:3000/uploads/artworks/preview/${e['preview_url']}")
+              "http://192.168.137.42:3000/artworks/preview/${e['preview_url']}")
           .toList();
     }
 
@@ -170,7 +175,8 @@ class _KontenDetailPage extends State<KontenDetailPage> {
           avatarUrl: avatarUrl,
           data: data ?? {},
           reloadData: loadUserData,
-          uploadAvatarWeb: widget.uploadAvatarWeb,
+          //uploadAvatarWeb: widget.uploadAvatarWeb,
+          uploadAvatarMobile: widget.uploadAvatarMobile,
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),

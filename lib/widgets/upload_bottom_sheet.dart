@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -30,10 +31,19 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> {
     final picker = ImagePicker();
     final results = await picker.pickMultiImage();
 
-    if (results.length > 5) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Max 5 gambar!")),
-      );
+      if (results.isEmpty) return;
+
+      if (results.length > 5) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Max 5 gambar!")),
+        );
+        return;
+      }
+
+      if (results.length > 5) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Max 5 gambar!")),
+        );
       return;
     }
 
@@ -88,25 +98,34 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> {
   }
 
   // PREVIEW BUILDER WEB + MOBILE
-  Widget buildPreview(XFile file) {
-    return FutureBuilder(
-      future: file.readAsBytes(),
-      builder: (context, snap) {
-        if (!snap.hasData) {
-          return Container(
-            width: 120,
-            height: 120,
-            color: Colors.grey[200],
-          );
-        }
+  // Widget buildPreview(XFile file) {
+  //   return FutureBuilder(
+  //     future: file.readAsBytes(),
+  //     builder: (context, snap) {
+  //       if (!snap.hasData) {
+  //         return Container(
+  //           width: 120,
+  //           height: 120,
+  //           color: Colors.grey[200],
+  //         );
+  //       }
 
-        return Image.memory(
-          snap.data!,
-          width: 120,
-          height: 120,
-          fit: BoxFit.cover,
-        );
-      },
+  //       return Image.memory(
+  //         snap.data!,
+  //         width: 120,
+  //         height: 120,
+  //         fit: BoxFit.cover,
+  //       );
+  //     },
+  //   );
+  // }
+  
+  Widget buildPreview(XFile file) {
+    return Image.file(
+      File(file.path),
+      width: 120,
+      height: 120,
+      fit: BoxFit.cover,
     );
   }
 

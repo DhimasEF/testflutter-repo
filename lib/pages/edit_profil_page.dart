@@ -28,13 +28,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _bioController = TextEditingController(text: widget.userData['bio'] ?? '');
   }
 
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _emailController.dispose();
+    _nameController.dispose();
+    _bioController.dispose();
+    super.dispose();
+  }
+
   Future<void> _updateProfile() async {
     setState(() => isLoading = true);
 
     try {
       final idUser = widget.userData['id_user'];
       final response = await http.put(
-        Uri.parse('http://192.168.6.16:3000/profil/update/$idUser'),
+        // Uri.parse('http://192.168.6.16:3000/profil/update/$idUser'),
+        // Uri.parse('https://murally-ultramicroscopical-mittie.ngrok-free.dev/profil/update/$idUser'),
+        // Uri.parse('http://localhost:3000/profil/update/$idUser'),
+        Uri.parse('http://192.168.137.42:3000/profil/update/$idUser'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': _usernameController.text,
@@ -85,11 +97,24 @@ class _EditProfilePageState extends State<EditProfilePage> {
               TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(labelText: 'Username'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Username wajib diisi';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(labelText: 'Email'),
+                validator: (value) {
+                  if (value == null || !value.contains('@')) {
+                    return 'Email tidak valid';
+                  }
+                  return null;
+                },
               ),
+
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(labelText: 'Nama Lengkap'),
@@ -105,7 +130,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   : ElevatedButton.icon(
                       icon: Icon(Icons.save),
                       label: Text('Simpan Perubahan'),
-                      onPressed: _updateProfile,
+                      onPressed: isLoading
+                      ? null
+                      : () {
+                          if (_formKey.currentState!.validate()) {
+                            _updateProfile();
+                          }
+                        },
                       style: ElevatedButton.styleFrom(
                         minimumSize: Size(double.infinity, 48),
                         shape: RoundedRectangleBorder(

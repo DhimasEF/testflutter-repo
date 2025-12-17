@@ -13,7 +13,8 @@ class DetailCreatorTransaksiPage extends StatefulWidget {
   final String? avatarUrl;
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
-  final Future<void> Function(int)? uploadAvatarWeb;
+  //final Future<void> Function(int)? uploadAvatarWeb;
+  final Future<void> Function(int)? uploadAvatarMobile;
   final int idOrder;
 
   const DetailCreatorTransaksiPage({
@@ -23,7 +24,8 @@ class DetailCreatorTransaksiPage extends StatefulWidget {
     this.avatarUrl,
     this.data,
     this.reloadData,
-    this.uploadAvatarWeb,
+    //this.uploadAvatarWeb,
+    this.uploadAvatarMobile,
     required this.idOrder,
   });
 
@@ -34,18 +36,129 @@ class DetailCreatorTransaksiPage extends StatefulWidget {
 
 class _DetailCreatorTransaksiPageState
     extends State<DetailCreatorTransaksiPage> {
-  String username = '';
-  String email = '';
-  String role = '';
-  String? avatarUrl;
-  Map<String, dynamic>? data;
+    String username = '';
+    String email = '';
+    String role = '';
+    String? avatarUrl;
+    Map<String, dynamic>? data;
 
-  int selectedIndex = 2;
+    int selectedIndex = 2;
 
-  @override
-  void initState() {
-    super.initState();
-    loadUserData();
+    @override
+    void initState() {
+      super.initState();
+      loadUserData();
+    }
+
+    void showPaymentProofModal(
+      BuildContext context, {
+      required String imageUrl,
+      required int idOrder,
+    }) {
+      showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (_) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text("Bukti Pembayaran"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // IMAGE
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          height: 220,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            height: 220,
+                            color: Colors.grey.shade200,
+                            child: const Icon(Icons.broken_image, size: 60),
+                          ),
+                        )
+                      : Container(
+                          height: 220,
+                          color: Colors.grey.shade100,
+                          alignment: Alignment.center,
+                          child: const Text(
+                            "Bukti pembayaran belum tersedia",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // BUTTONS
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          minimumSize: const Size(0, 45),
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await handleRejectPayment(idOrder);
+                        },
+                        child: const Text("Tolak"),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          minimumSize: const Size(0, 45),
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await handleAcceptPayment(idOrder);
+                        },
+                        child: const Text("ACC"),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+
+    Future<void> handleAcceptPayment(int idOrder) async {
+    final res = await ApiService.acceptPayment(idOrder);
+
+    if (res['status'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Pembayaran di-ACC")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res['message'] ?? "Gagal ACC")),
+      );
+    }
+  }
+
+  Future<void> handleRejectPayment(int idOrder) async {
+    final res = await ApiService.rejectPayment(idOrder);
+
+    if (res['status'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Pembayaran ditolak")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res['message'] ?? "Gagal menolak")),
+      );
+    }
   }
 
   // ======================================================
@@ -117,7 +230,8 @@ class _DetailCreatorTransaksiPageState
           avatarUrl: avatarUrl,
           data: data ?? {},
           reloadData: loadUserData,
-          uploadAvatarWeb: widget.uploadAvatarWeb,
+          //uploadAvatarWeb: widget.uploadAvatarWeb,
+          uploadAvatarMobile: widget.uploadAvatarMobile,
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),
@@ -181,7 +295,7 @@ class _DetailCreatorTransaksiPageState
 
             ...items.map((art) {
               final img = art['images'].isNotEmpty
-                  ? ApiService.baseUrlimage + "uploads/artworks/preview/" + art['images'][0]
+                  ? ApiService.baseUrlimage + "/uploads/artworks/preview/" + art['images'][0]
                   : null;
 
               return Container(
@@ -264,19 +378,31 @@ class _DetailCreatorTransaksiPageState
             // ACTION BUTTON
             // -------------------------
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                debugPrint("ORDER DATA => ${widget.order}");
+                debugPrint("NOTE => ${widget.order['note']}");
+
+                final note = widget.order['note'];
+                showPaymentProofModal(
+                  context,
+                  imageUrl: note != null && note.toString().isNotEmpty
+                      ? ApiService.baseUrlimage + "/uploads/payment/" + note
+                      : "",
+                  idOrder: widget.idOrder,
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent,
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
-              child: Text(
+              child: const Text(
                 "Lihat Bukti Pembayaran",
                 style: TextStyle(fontSize: 16),
               ),
             ),
-
             SizedBox(height: 14),
 
             ElevatedButton(

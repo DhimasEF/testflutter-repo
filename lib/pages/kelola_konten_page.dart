@@ -13,7 +13,8 @@ class KelolaKontenPage extends StatefulWidget {
   final String? avatarUrl;
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
-  final Future<void> Function(int)? uploadAvatarWeb;
+  //final Future<void> Function(int)? uploadAvatarWeb;
+  final Future<void> Function(int)? uploadAvatarMobile;
 
   const KelolaKontenPage({
     super.key,
@@ -21,7 +22,8 @@ class KelolaKontenPage extends StatefulWidget {
     this.avatarUrl,
     this.data,
     this.reloadData,
-    this.uploadAvatarWeb,
+    //this.uploadAvatarWeb,
+    this.uploadAvatarMobile,
   });
 
   @override
@@ -163,7 +165,8 @@ class _KelolaKontenPageState extends State<KelolaKontenPage> {
           avatarUrl: avatarUrl,
           data: data ?? {},
           reloadData: loadUserData,
-          uploadAvatarWeb: widget.uploadAvatarWeb,
+          //uploadAvatarWeb: widget.uploadAvatarWeb,
+          uploadAvatarMobile: widget.uploadAvatarMobile,
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),
@@ -226,7 +229,9 @@ class _KelolaKontenPageState extends State<KelolaKontenPage> {
                                     ? ClipRRect(
                                         borderRadius: BorderRadius.circular(6),
                                         child: Image.network(
-                                          "http://192.168.6.16:3000/uploads/artworks/preview/$thumb",
+                                          // "http://192.168.6.16:3000/uploads/artworks/preview/$thumb",
+                                          // "https://murally-ultramicroscopical-mittie.ngrok-free.dev/uploads/artworks/preview/$thumb",
+                                          "http://localhost:3000/uploads/artworks/preview/$thumb",
                                           width: 70,
                                           height: 70,
                                           fit: BoxFit.cover,

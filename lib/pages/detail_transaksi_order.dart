@@ -16,7 +16,8 @@ class DetailTransaksiOrderPage extends StatefulWidget {
   final String? avatarUrl;
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
-  final Future<void> Function(int)? uploadAvatarWeb;
+  //final Future<void> Function(int)? uploadAvatarWeb;
+  final Future<void> Function(int)? uploadAvatarMobile;
   final int idOrder;
 
   const DetailTransaksiOrderPage({
@@ -26,7 +27,8 @@ class DetailTransaksiOrderPage extends StatefulWidget {
     this.avatarUrl,
     this.data,
     this.reloadData,
-    this.uploadAvatarWeb,
+    //this.uploadAvatarWeb,
+    this.uploadAvatarMobile,
     required this.idOrder,
   });
 
@@ -258,7 +260,8 @@ class _DetailTransaksiOrderPageState extends State<DetailTransaksiOrderPage> {
           avatarUrl: avatarUrl,
           data: data ?? {},
           reloadData: loadUserData,
-          uploadAvatarWeb: widget.uploadAvatarWeb,
+          //uploadAvatarWeb: widget.uploadAvatarWeb,
+          uploadAvatarMobile: widget.uploadAvatarMobile,
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),
@@ -440,7 +443,9 @@ class _DetailTransaksiOrderPageState extends State<DetailTransaksiOrderPage> {
             SizedBox(height: 20),
 
             ElevatedButton(
-              onPressed: () => showPaymentDialog(totalPrice),
+              onPressed: order["payment_status"] == "paid"
+                  ? null
+                  : () => showPaymentDialog(totalPrice),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent,
                 minimumSize: Size(double.infinity, 50),

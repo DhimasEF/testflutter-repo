@@ -5,7 +5,8 @@ import 'edit_profil_page.dart';
 import 'login_page.dart';
 import 'upload_konten_page.dart';
 import 'creator_transaksi_page.dart';
-import 'dart:html' as html;
+import 'package:file_picker/file_picker.dart';
+//import 'dart:html' as html;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -69,26 +70,63 @@ class _CreatorDashboardPageState extends State<CreatorDashboardPage> {
     }
   }
 
-  Future<void> uploadAvatarWeb(int userId) async {
-    final input = html.FileUploadInputElement()..accept = 'image/*';
-    input.click();
-    await input.onChange.first;
+  // Future<void> uploadAvatarWeb(int userId) async {
+  //   final input = html.FileUploadInputElement()..accept = 'image/*';
+  //   input.click();
+  //   await input.onChange.first;
 
-    if (input.files!.isEmpty) return;
+  //   if (input.files!.isEmpty) return;
 
-    final file = input.files!.first;
-    final reader = html.FileReader();
-    reader.readAsDataUrl(file);
-    await reader.onLoad.first;
+  //   final file = input.files!.first;
+  //   final reader = html.FileReader();
+  //   reader.readAsDataUrl(file);
+  //   await reader.onLoad.first;
 
-    final base64Image = reader.result as String;
+  //   final base64Image = reader.result as String;
+
+  //   final response = await http.post(
+  //     Uri.parse('http://192.168.6.16:3000/profil/upload-avatar'),
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: jsonEncode({
+  //       'id_user': userId,
+  //       'avatar_base64': base64Image,
+  //     }),
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     final resData = jsonDecode(response.body);
+  //     if (resData['status'] == true) {
+  //       setState(() {
+  //         avatarUrl = (resData['avatar'] != null && resData['avatar'] != "")
+  //             ? ApiService.avatarBaseUrl + resData['avatar']
+  //             : null;
+  //       });
+
+  //       await loadUserData();
+  //     }
+  //   }
+  // }
+
+  Future<void> uploadAvatarMobile(int userId) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+
+    if (result == null) return;
+
+    final file = result.files.single;
+    final base64Image = base64Encode(file.bytes!);
 
     final response = await http.post(
-      Uri.parse('http://192.168.6.16:3000/profil/upload-avatar'),
+      // Uri.parse('http://192.168.6.16:3000/profil/upload-avatar'),
+      // Uri.parse('https://murally-ultramicroscopical-mittie.ngrok-free.dev/profil/upload-avatar'),
+      // Uri.parse('http://localhost:3000/profil/upload-avatar'),
+      Uri.parse('http://192.168.137.42:3000/profil/upload-avatar'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'id_user': userId,
-        'avatar_base64': base64Image,
+        'avatar_base64': 'data:image/png;base64,$base64Image',
       }),
     );
 
@@ -96,11 +134,10 @@ class _CreatorDashboardPageState extends State<CreatorDashboardPage> {
       final resData = jsonDecode(response.body);
       if (resData['status'] == true) {
         setState(() {
-          avatarUrl = (resData['avatar'] != null && resData['avatar'] != "")
+          avatarUrl = resData['avatar'] != null
               ? ApiService.avatarBaseUrl + resData['avatar']
               : null;
         });
-
         await loadUserData();
       }
     }
@@ -155,11 +192,21 @@ class _CreatorDashboardPageState extends State<CreatorDashboardPage> {
                         bottom: 0,
                         right: 4,
                         child: InkWell(
+                          // onTap: () async {
+                          //   SharedPreferences prefs =
+                          //       await SharedPreferences.getInstance();
+                          //   int userId = prefs.getInt('id_user') ?? 0;
+                          //   await uploadAvatarWeb(userId);
+                          //   Navigator.pop(context);
+                          //   loadUserData();
+                          // },
                           onTap: () async {
                             SharedPreferences prefs =
                                 await SharedPreferences.getInstance();
                             int userId = prefs.getInt('id_user') ?? 0;
-                            await uploadAvatarWeb(userId);
+
+                            await uploadAvatarMobile(userId);
+
                             Navigator.pop(context);
                             loadUserData();
                           },
