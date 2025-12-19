@@ -6,13 +6,15 @@ import 'package:mime/mime.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ApiService {
+  static const String baseUrl = 'http://10.0.2.2:3000';
   // static const String baseUrl = 'http://192.168.6.16:3000';
   // static const String baseUrl = 'http://localhost:3000';
-  static const String baseUrl = 'http://192.168.137.42:3000';
+  // static const String baseUrl = 'http://192.168.137.42:3000';
   // static const String baseUrl = 'https://murally-ultramicroscopical-mittie.ngrok-free.dev';
+  static const String baseUrlimage = 'http://10.0.2.2:3000';
   // static const String baseUrlimage = 'http://192.168.6.16:3000';
   // static const String baseUrlimage = 'http://localhost:3000';
-  static const String baseUrlimage = 'http://192.168.137.42:3000';
+  // static const String baseUrlimage = 'http://192.168.137.42:3000';
   // static const String baseUrlimage = 'https://murally-ultramicroscopical-mittie.ngrok-free.dev';
   static const String avatarBaseUrl = "${baseUrlimage}/uploads/avatar/";
   // ============================

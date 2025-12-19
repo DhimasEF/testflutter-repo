@@ -6,6 +6,7 @@ import 'login_page.dart';
 import 'edit_profil_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+// import '../services/profile_service.dart';
 import 'detail_transaksi_order.dart';// pastikan path sesuai
 
 class OrderTransaksiPage extends StatefulWidget {
@@ -14,7 +15,7 @@ class OrderTransaksiPage extends StatefulWidget {
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
   //final Future<void> Function(int)? uploadAvatarWeb;
-  final Future<void> Function(int)? uploadAvatarMobile;
+  // final Future<void> Function(int) uploadAvatarMobile;
 
   const OrderTransaksiPage({
     super.key,
@@ -23,7 +24,7 @@ class OrderTransaksiPage extends StatefulWidget {
     this.data,
     this.reloadData,
     //this.uploadAvatarWeb,
-    this.uploadAvatarMobile,
+    // required this.uploadAvatarMobile,
   });
 
   @override
@@ -158,7 +159,7 @@ class _OrderTransaksiPageState extends State<OrderTransaksiPage> {
           data: data ?? {},                  // <-- kasih default kosong supaya aman
           reloadData: loadUserData,          // <-- pakai function dari state
           //uploadAvatarWeb: widget.uploadAvatarWeb, // <-- ambil dari widget
-          uploadAvatarMobile: widget.uploadAvatarMobile, // <-- ambil dari widget
+          // uploadAvatarMobile: widget.uploadAvatarMobile, // <-- ambil dari widget
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),

@@ -14,7 +14,7 @@ class KelolaKontenPage extends StatefulWidget {
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
   //final Future<void> Function(int)? uploadAvatarWeb;
-  final Future<void> Function(int)? uploadAvatarMobile;
+  // final Future<void> Function(int) uploadAvatarMobile;
 
   const KelolaKontenPage({
     super.key,
@@ -23,7 +23,7 @@ class KelolaKontenPage extends StatefulWidget {
     this.data,
     this.reloadData,
     //this.uploadAvatarWeb,
-    this.uploadAvatarMobile,
+    // required this.uploadAvatarMobile,
   });
 
   @override
@@ -166,7 +166,7 @@ class _KelolaKontenPageState extends State<KelolaKontenPage> {
           data: data ?? {},
           reloadData: loadUserData,
           //uploadAvatarWeb: widget.uploadAvatarWeb,
-          uploadAvatarMobile: widget.uploadAvatarMobile,
+          // uploadAvatarMobile: widget.uploadAvatarMobile,
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),
@@ -229,9 +229,11 @@ class _KelolaKontenPageState extends State<KelolaKontenPage> {
                                     ? ClipRRect(
                                         borderRadius: BorderRadius.circular(6),
                                         child: Image.network(
+                                          "http://10.0.2.2:3000/uploads/artworks/preview/$thumb",
                                           // "http://192.168.6.16:3000/uploads/artworks/preview/$thumb",
                                           // "https://murally-ultramicroscopical-mittie.ngrok-free.dev/uploads/artworks/preview/$thumb",
-                                          "http://localhost:3000/uploads/artworks/preview/$thumb",
+                                          // "http://localhost:3000/uploads/artworks/preview/$thumb",
+                                          // "http://192.168.137.42:3000/uploads/artworks/preview/$thumb",
                                           width: 70,
                                           height: 70,
                                           fit: BoxFit.cover,

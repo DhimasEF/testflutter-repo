@@ -17,7 +17,7 @@ class DetailTransaksiOrderPage extends StatefulWidget {
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
   //final Future<void> Function(int)? uploadAvatarWeb;
-  final Future<void> Function(int)? uploadAvatarMobile;
+  // final Future<void> Function(int) uploadAvatarMobile;
   final int idOrder;
 
   const DetailTransaksiOrderPage({
@@ -28,7 +28,7 @@ class DetailTransaksiOrderPage extends StatefulWidget {
     this.data,
     this.reloadData,
     //this.uploadAvatarWeb,
-    this.uploadAvatarMobile,
+    // required this.uploadAvatarMobile,
     required this.idOrder,
   });
 
@@ -85,6 +85,20 @@ class _DetailTransaksiOrderPageState extends State<DetailTransaksiOrderPage> {
             ? ApiService.avatarBaseUrl + d['avatar']
             : null;
       });
+    }
+  }
+
+  Future<XFile?> pickImageFromGallery() async {
+    final ImagePicker picker = ImagePicker();
+
+    try {
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+      );
+      return picked;
+    } catch (e) {
+      debugPrint("Image picker error: $e");
+      return null;
     }
   }
 
@@ -162,11 +176,9 @@ class _DetailTransaksiOrderPageState extends State<DetailTransaksiOrderPage> {
                   SizedBox(height: 10),
 
                   GestureDetector(
+                    // 
                     onTap: () async {
-                      final ImagePicker picker = ImagePicker();
-                      final picked = await picker.pickImage(
-                        source: ImageSource.gallery,
-                      );
+                      final picked = await pickImageFromGallery();
 
                       if (picked != null) {
                         setStateDialog(() {
@@ -261,7 +273,7 @@ class _DetailTransaksiOrderPageState extends State<DetailTransaksiOrderPage> {
           data: data ?? {},
           reloadData: loadUserData,
           //uploadAvatarWeb: widget.uploadAvatarWeb,
-          uploadAvatarMobile: widget.uploadAvatarMobile,
+          // uploadAvatarMobile: widget.uploadAvatarMobile,
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),

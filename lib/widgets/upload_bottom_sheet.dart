@@ -27,34 +27,59 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> {
   bool uploading = false;
 
   // PICK MULTI IMAGES (max 5)
+  // Future pickImages() async {
+  //   final picker = ImagePicker();
+  //   final results = await picker.pickMultiImage();
+
+  //     if (results.isEmpty) return;
+
+  //     if (results.length > 5) {
+  //       ScaffoldMessenger.of(context).shiSnackBar(
+  //         const SnackBar(content: Text("Max 5 gambar!")),
+  //       );
+  //       return;
+  //     }
+
+  //     if (results.length > 5) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Max 5 gambar!")),
+  //       );
+  //     return;
+  //   }
+
+  //   images = results;
+
+  //   if (images.isNotEmpty) {
+  //     mainPreview = await images.first.readAsBytes();
+  //   }
+
+  //   setState(() {});
+  //   }
   Future pickImages() async {
     final picker = ImagePicker();
-    final results = await picker.pickMultiImage();
 
-      if (results.isEmpty) return;
+    try {
+      final XFile? picked = await picker.pickImage(
+        source: ImageSource.gallery,
+      );
 
-      if (results.length > 5) {
+      if (picked == null) return;
+
+      if (images.length >= 5) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Max 5 gambar!")),
         );
         return;
       }
 
-      if (results.length > 5) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Max 5 gambar!")),
-        );
-      return;
-    }
+      images.add(picked);
+      mainPreview = await picked.readAsBytes();
 
-    images = results;
-
-    if (images.isNotEmpty) {
-      mainPreview = await images.first.readAsBytes();
+      setState(() {});
+    } catch (e) {
+      debugPrint("ERROR PICK IMAGE: $e");
     }
-
-    setState(() {});
-    }
+  }
 
   // SUBMIT UPLOAD
   Future submitUpload() async {
@@ -242,7 +267,10 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> {
 
             Center(
               child: ElevatedButton.icon(
-                onPressed: pickImages,
+                onPressed: () {
+                  debugPrint("BUTTON DIPENCET");
+                  pickImages();
+                },
                 icon: const Icon(Icons.image),
                 label: const Text("Pilih Maksimal 5 Gambar"),
               ),

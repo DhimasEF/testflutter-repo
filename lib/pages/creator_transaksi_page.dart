@@ -14,7 +14,7 @@ class CreatorTransaksiPage extends StatefulWidget {
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
   //final Future<void> Function(int)? uploadAvatarWeb;
-  final Future<void> Function(int)? uploadAvatarMobile;
+  // final Future<void> Function(int) uploadAvatarMobile;
 
   const CreatorTransaksiPage({
     super.key,
@@ -23,7 +23,7 @@ class CreatorTransaksiPage extends StatefulWidget {
     this.data,
     this.reloadData,
     //this.uploadAvatarWeb,
-    this.uploadAvatarMobile,
+    // required this.uploadAvatarMobile,
   });
 
   @override
@@ -161,7 +161,7 @@ class _CreatorTransaksiPageState extends State<CreatorTransaksiPage> {
           data: data ?? {},
           reloadData: loadUserData,
           //uploadAvatarWeb: widget.uploadAvatarWeb,
-          uploadAvatarMobile: widget.uploadAvatarMobile,
+          // uploadAvatarMobile: widget.uploadAvatarMobile,
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),

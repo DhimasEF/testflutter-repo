@@ -13,7 +13,7 @@ class KelolaUserPage extends StatefulWidget {
   final Map<String, dynamic>? data;
   final Future<void> Function()? reloadData;
   //final Future<void> Function(int)? uploadAvatarWeb;
-  final Future<void> Function(int)? uploadAvatarMobile;
+  // final Future<void> Function(int) uploadAvatarMobile;
 
   const KelolaUserPage({
     super.key,
@@ -22,7 +22,7 @@ class KelolaUserPage extends StatefulWidget {
     this.data,
     this.reloadData,
     //this.uploadAvatarWeb,
-    this.uploadAvatarMobile,
+    // required this.uploadAvatarMobile,
   });
 
   @override
@@ -263,7 +263,7 @@ class _KelolaUserPageState extends State<KelolaUserPage>
           data: data ?? {},
           reloadData: loadUserData,
           //uploadAvatarWeb: widget.uploadAvatarWeb,
-          uploadAvatarMobile: widget.uploadAvatarMobile,
+          // uploadAvatarMobile: widget.uploadAvatarMobile,
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),

@@ -323,7 +323,7 @@ class _ViewKontenPageState extends State<ViewKontenPage> {
           data: data ?? {},
           reloadData: loadUserData,
           //uploadAvatarWeb: null,
-          uploadAvatarMobile: null,
+          // uploadAvatarMobile: null,
           editPageBuilder: (d) => EditProfilePage(userData: d),
         ),
       ),

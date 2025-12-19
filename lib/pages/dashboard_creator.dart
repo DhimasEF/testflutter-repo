@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../services/profile_service.dart';
 import 'edit_profil_page.dart';
 import 'login_page.dart';
 import 'upload_konten_page.dart';
@@ -106,42 +107,42 @@ class _CreatorDashboardPageState extends State<CreatorDashboardPage> {
   //     }
   //   }
   // }
+  // Future<void> uploadAvatarMobile(int userId) async {
+  //   final result = await FilePicker.platform.pickFiles(
+  //     type: FileType.image,
+  //     withData: true,
+  //   );
 
-  Future<void> uploadAvatarMobile(int userId) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      withData: true,
-    );
+  //   if (result == null) return;
 
-    if (result == null) return;
+  //   final file = result.files.single;
+  //   final base64Image = base64Encode(file.bytes!);
 
-    final file = result.files.single;
-    final base64Image = base64Encode(file.bytes!);
+  //   final response = await http.post(
+  //     Uri.parse('http://10.0.2.2:3000/profil/upload-avatar'),
+  //     // Uri.parse('http://192.168.6.16:3000/profil/upload-avatar'),
+  //     // Uri.parse('https://murally-ultramicroscopical-mittie.ngrok-free.dev/profil/upload-avatar'),
+  //     // Uri.parse('http://localhost:3000/profil/upload-avatar'),
+  //     // Uri.parse('http://192.168.137.42:3000/profil/upload-avatar'),
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: jsonEncode({
+  //       'id_user': userId,
+  //       'avatar_base64': 'data:image/png;base64,$base64Image',
+  //     }),
+  //   );
 
-    final response = await http.post(
-      // Uri.parse('http://192.168.6.16:3000/profil/upload-avatar'),
-      // Uri.parse('https://murally-ultramicroscopical-mittie.ngrok-free.dev/profil/upload-avatar'),
-      // Uri.parse('http://localhost:3000/profil/upload-avatar'),
-      Uri.parse('http://192.168.137.42:3000/profil/upload-avatar'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'id_user': userId,
-        'avatar_base64': 'data:image/png;base64,$base64Image',
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      final resData = jsonDecode(response.body);
-      if (resData['status'] == true) {
-        setState(() {
-          avatarUrl = resData['avatar'] != null
-              ? ApiService.avatarBaseUrl + resData['avatar']
-              : null;
-        });
-        await loadUserData();
-      }
-    }
-  }
+  //   if (response.statusCode == 200) {
+  //     final resData = jsonDecode(response.body);
+  //     if (resData['status'] == true) {
+  //       setState(() {
+  //         avatarUrl = resData['avatar'] != null
+  //             ? ApiService.avatarBaseUrl + resData['avatar']
+  //             : null;
+  //       });
+  //       await loadUserData();
+  //     }
+  //   }
+  // }
 
   // Slide Profile Panel
   void showProfilePanel(BuildContext context) {
@@ -200,15 +201,25 @@ class _CreatorDashboardPageState extends State<CreatorDashboardPage> {
                           //   Navigator.pop(context);
                           //   loadUserData();
                           // },
+                          // onTap: () async {
+                          //   SharedPreferences prefs =
+                          //       await SharedPreferences.getInstance();
+                          //   int userId = prefs.getInt('id_user') ?? 0;
+
+                          //   await uploadAvatarMobile(userId);
+
+                          //   Navigator.pop(context);
+                          //   loadUserData();
+                          // },
                           onTap: () async {
                             SharedPreferences prefs =
                                 await SharedPreferences.getInstance();
                             int userId = prefs.getInt('id_user') ?? 0;
 
-                            await uploadAvatarMobile(userId);
+                            await ProfileService.uploadAvatar(userId);
 
                             Navigator.pop(context);
-                            loadUserData();
+                            await loadUserData();
                           },
                           child: Container(
                             decoration: const BoxDecoration(
