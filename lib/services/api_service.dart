@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'package:image_picker/image_picker.dart';
+import '../utils/client_context.dart';
+
 
 class ApiService {
   static const String baseUrl = 'http://10.0.2.2:3000';
@@ -17,23 +19,39 @@ class ApiService {
   // static const String baseUrlimage = 'http://192.168.137.42:3000';
   // static const String baseUrlimage = 'https://murally-ultramicroscopical-mittie.ngrok-free.dev';
   static const String avatarBaseUrl = "${baseUrlimage}/uploads/avatar/";
+
+  static Future<Map<String, String>> _clientHeader() async {
+    final client = await ClientContext.get();
+
+    return {
+      "X-Client-IP": client["ip"] ?? "unknown",
+      "X-Client-Device": client["device"] ?? "unknown",
+      "X-Client-Platform": client["platform"] ?? "unknown",
+    };
+  }
+
   // ============================
   // LOGIN
   // ============================
   static Future<Map<String, dynamic>> login(
     String username,
     String password,
-  ) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': username, 'password': password}),
-    );
+    ) async {
+      final clientHeader = await _clientHeader();
 
-    print(response.body);
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {
+          'Content-Type': 'application/json',
+          ...clientHeader,
+        },
+        body: jsonEncode({'username': username, 'password': password}),
+      );
 
-    return jsonDecode(response.body);
-  }
+      print(response.body);
+
+      return jsonDecode(response.body);
+    }
 
   // ============================
   // REGISTER
@@ -44,10 +62,14 @@ class ApiService {
     String password,
   ) async {
     final url = Uri.parse('$baseUrl/auth/register');
+    final clientHeader = await _clientHeader();
 
     final response = await http.post(
       url,
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        ...clientHeader,
+      },
       body: jsonEncode({
         'username': username,
         'email': email,
@@ -68,10 +90,13 @@ class ApiService {
     final url = userId != null
         ? '$baseUrl/profil/get/$userId'
         : '$baseUrl/api/user/data';
-
+    final clientHeader = await _clientHeader();
     final resp = await http.get(
       Uri.parse(url),
-      headers: {'Authorization': 'Bearer $token'},
+      headers: {
+        'Authorization': 'Bearer $token',
+        ...clientHeader,
+      },
     );
 
     return resp.statusCode == 200
@@ -84,10 +109,13 @@ class ApiService {
   // ============================
   static Future<dynamic> getAllUsers(String token) async {
     final url = Uri.parse("$baseUrl/user/list");
-
+    final clientHeader = await _clientHeader();
     final response = await http.get(
       url,
-      headers: {"Authorization": "Bearer $token"},
+      headers: {
+        "Authorization": "Bearer $token",
+        ...clientHeader,
+      },
     );
 
     return jsonDecode(response.body);
@@ -98,10 +126,13 @@ class ApiService {
   // ============================
   static Future<dynamic> resetPassword(String token, String idUser) async {
     final url = Uri.parse("$baseUrl/user/reset_password/$idUser");
-
+    final clientHeader = await _clientHeader();
     final response = await http.post(
       url,
-      headers: {"Authorization": "Bearer $token"},
+      headers: {
+        "Authorization": "Bearer $token",
+        ...clientHeader,
+      },
     );
 
     return jsonDecode(response.body);
@@ -121,7 +152,10 @@ class ApiService {
   }) async {
     final url = Uri.parse("$baseUrl/artwork/upload");
 
+    final clientHeader = await _clientHeader();
+
     final request = http.MultipartRequest("POST", url);
+    request.headers.addAll(clientHeader);
     request.headers["Authorization"] = "Bearer $token";
 
     request.fields["id_user"] = userId.toString();
@@ -137,7 +171,7 @@ class ApiService {
 
       request.files.add(
         http.MultipartFile.fromBytes(
-          "images[]",
+          "images",
           bytes,
           filename: img.name,
           contentType: MediaType(mime[0], mime[1]),
@@ -159,12 +193,14 @@ class ApiService {
   static Future<List<Map<String, dynamic>>> getDraftContents() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
+    final clientHeader = await _clientHeader();
 
     final response = await http.get(
       Uri.parse('$baseUrl/artwork/draft'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
+        ...clientHeader,
       },
     );
 
@@ -206,12 +242,14 @@ class ApiService {
   static Future<List<Map<String, dynamic>>> getAllContentsAdmin() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
+    final clientHeader = await _clientHeader();
 
     final response = await http.get(
       Uri.parse('$baseUrl/artwork/all_admin'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
+        ...clientHeader,
       },
     );
 
@@ -238,12 +276,14 @@ class ApiService {
   static Future<List<Map<String, dynamic>>> getAllArtwork() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
+    final clientHeader = await _clientHeader();
 
     final response = await http.get(
       Uri.parse('$baseUrl/artwork/all'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
+        ...clientHeader,
       },
     );
 
@@ -313,7 +353,7 @@ class ApiService {
     required String status,
   }) async {
     final url = Uri.parse("$baseUrl/artwork/updateStatus");
-
+    final clientHeader = await _clientHeader();
     final response = await http.post(
       url,
       body: {
@@ -322,6 +362,7 @@ class ApiService {
       },
       headers: {
         "Authorization": "Bearer $token",
+        ...clientHeader,
       },
     );
 
@@ -330,12 +371,13 @@ class ApiService {
 
   static Future<dynamic> createOrder(String token, Map<String, dynamic> data) async {
     final url = Uri.parse("$baseUrl/order/create");
-
+    final clientHeader = await _clientHeader();
     final response = await http.post(
       url,
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
+        ...clientHeader,
       },
       body: jsonEncode(data),
     );
@@ -347,12 +389,13 @@ class ApiService {
   static Future<List<Map<String, dynamic>>> getMyOrders(int idBuyer) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
-
+    final clientHeader = await _clientHeader();
     final response = await http.get(
       Uri.parse('$baseUrl/order/my-buyer?id_buyer=$idBuyer'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
+        ...clientHeader,
       },
     );
 
@@ -403,7 +446,10 @@ class ApiService {
     required XFile file,
   }) async {
     final uri = Uri.parse("$baseUrl/order/upload-payment");
+    final clientHeader = await _clientHeader();
+
     final request = http.MultipartRequest("POST", uri);
+    request.headers.addAll(clientHeader);
 
     // field text
     request.fields["id_order"] = idOrder.toString();
@@ -431,71 +477,75 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> acceptPayment(int idOrder) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString("token") ?? "";
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token") ?? "";
+    final clientHeader = await _clientHeader();
+    final res = await http.post(
+      Uri.parse("$baseUrl/order/accept-payment"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Accept": "application/json",
+        ...clientHeader,
+      },
+      body: {
+        "id_order": idOrder.toString(),
+      },
+    );
 
-  final res = await http.post(
-    Uri.parse("$baseUrl/order/accept-payment"),
-    headers: {
-      "Authorization": "Bearer $token",
-      "Accept": "application/json",
-    },
-    body: {
-      "id_order": idOrder.toString(),
-    },
-  );
+    return jsonDecode(res.body);
+  }
 
-  return jsonDecode(res.body);
-}
+  static Future<Map<String, dynamic>> rejectPayment(int idOrder) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token") ?? "";
+    final clientHeader = await _clientHeader();
+    final res = await http.post(
+      Uri.parse("$baseUrl/order/reject-payment"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Accept": "application/json",
+        ...clientHeader,
+      },
+      body: {
+        "id_order": idOrder.toString(),
+      },
+    );
 
-static Future<Map<String, dynamic>> rejectPayment(int idOrder) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString("token") ?? "";
-
-  final res = await http.post(
-    Uri.parse("$baseUrl/order/reject-payment"),
-    headers: {
-      "Authorization": "Bearer $token",
-      "Accept": "application/json",
-    },
-    body: {
-      "id_order": idOrder.toString(),
-    },
-  );
-
-  return jsonDecode(res.body);
-}
-
-
-static Future<Map<String, dynamic>> cancelOrder(int idOrder) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token') ?? '';
-
-  final res = await http.put(
-    Uri.parse("$baseUrl/order/cancel/$idOrder"),
-    headers: {
-      "Authorization": "Bearer $token",
-      "Accept": "application/json",
-    },
-  );
-
-  return jsonDecode(res.body);
-}
+    return jsonDecode(res.body);
+  }
 
 
-static Future<Map<String, dynamic>> getAllOrdersAdmin() async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString("token") ?? "";
+  static Future<Map<String, dynamic>> cancelOrder(int idOrder) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final clientHeader = await _clientHeader();
+    final res = await http.put(
+      Uri.parse("$baseUrl/order/cancel/$idOrder"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Accept": "application/json",
+        ...clientHeader,
+      },
+    );
 
-  final res = await http.get(
-    Uri.parse("$baseUrl/order/all-order"),
-    headers: {
-      "Authorization": "Bearer $token",
-      "Accept": "application/json",
-    },
-  );
-  print(res.body);
-  return jsonDecode(res.body);
-}
+    return jsonDecode(res.body);
+  }
+
+
+  static Future<Map<String, dynamic>> getAllOrdersAdmin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token") ?? "";
+    final clientHeader = await _clientHeader();
+    final res = await http.get(
+      Uri.parse("$baseUrl/order/all-order"),
+      headers: {
+        "Authorization": "Bearer $token",
+        "Accept": "application/json",
+        ...clientHeader,
+      },
+    );
+    print(res.body);
+    return jsonDecode(res.body);
+  }
 
 }

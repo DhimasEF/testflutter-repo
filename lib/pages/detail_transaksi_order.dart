@@ -265,11 +265,16 @@ class _DetailTransaksiOrderPageState extends State<DetailTransaksiOrderPage> {
     final paymentStatus = order["payment_status"]; // unpaid | waiting | paid | rejected
     final orderStatus = order["order_status"];     // pending | canceled | completed
 
-    final bool canPay = paymentStatus == "unpaid";
+    final bool canPay =
+      paymentStatus == "unpaid";
+
     final bool canCancel =
-        paymentStatus == "unpaid" || paymentStatus == "rejected";
+      paymentStatus == "unpaid" ||
+      orderStatus == "waiting" ||
+      paymentStatus == "cancelled";
+
     final bool canDownload =
-        paymentStatus == "paid" && orderStatus == "completed";
+      paymentStatus == "paid" && orderStatus == "completed";
 
 
     return Scaffold(

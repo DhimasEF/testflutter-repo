@@ -109,7 +109,8 @@ class _UploadBottomSheetState extends State<UploadBottomSheet> {
     setState(() => uploading = false);
 
     if (response['status'] == true) {
-      if (mounted) Navigator.pop(context); // tutup dulu
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         widget.onUploaded?.call();
