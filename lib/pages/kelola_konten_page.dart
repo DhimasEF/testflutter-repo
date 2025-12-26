@@ -229,11 +229,11 @@ class _KelolaKontenPageState extends State<KelolaKontenPage> {
                                     ? ClipRRect(
                                         borderRadius: BorderRadius.circular(6),
                                         child: Image.network(
-                                          "http://10.0.2.2:3000/uploads/artworks/preview/$thumb",
+                                          // "http://10.0.2.2:3000/uploads/artworks/preview/$thumb",
                                           // "http://192.168.6.16:3000/uploads/artworks/preview/$thumb",
                                           // "https://murally-ultramicroscopical-mittie.ngrok-free.dev/uploads/artworks/preview/$thumb",
                                           // "http://localhost:3000/uploads/artworks/preview/$thumb",
-                                          // "http://192.168.137.241:3000/uploads/artworks/preview/$thumb",
+                                          "http://192.168.137.188:3000/uploads/artworks/preview/$thumb",
                                           width: 70,
                                           height: 70,
                                           fit: BoxFit.cover,

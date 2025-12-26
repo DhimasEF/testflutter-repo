@@ -10,15 +10,15 @@ import 'dart:io';
 
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:3000';
+  // static const String baseUrl = 'http://10.0.2.2:3000';
   // static const String baseUrl = 'http://192.168.6.16:3000';
   // static const String baseUrl = 'http://localhost:3000';
-  // static const String baseUrl = 'http://192.168.137.241:3000';
+  static const String baseUrl = 'http://192.168.137.188:3000';
   // static const String baseUrl = 'https://murally-ultramicroscopical-mittie.ngrok-free.dev';
-  static const String baseUrlimage = 'http://10.0.2.2:3000';
+  // static const String baseUrlimage = 'http://10.0.2.2:3000';
   // static const String baseUrlimage = 'http://192.168.6.16:3000';
   // static const String baseUrlimage = 'http://localhost:3000';
-  // static const String baseUrlimage = 'http://192.168.137.241:3000';
+  static const String baseUrlimage = 'http://192.168.137.188:3000';
   // static const String baseUrlimage = 'https://murally-ultramicroscopical-mittie.ngrok-free.dev';
   static const String avatarBaseUrl = "${baseUrlimage}/uploads/avatar/";
 
@@ -559,14 +559,15 @@ class ApiService {
     final token = prefs.getString("token") ?? "";
 
     final dio = Dio();
-
+    final clientHeader = await _clientHeader();
     await dio.download(
-      "$baseUrl/orders/$idOrder/download",
+      "$baseUrl/order/$idOrder/download",
       savePath,
       onReceiveProgress: onProgress,
       options: Options(
         headers: {
           "Authorization": "Bearer $token",
+          ...clientHeader,
         },
         responseType: ResponseType.bytes,
         followRedirects: false,

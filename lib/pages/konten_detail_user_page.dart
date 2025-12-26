@@ -231,11 +231,11 @@ class _KontenDetailPage extends State<KontenDetailPage> {
     if (konten["images"] is List) {
       images = konten["images"]
           .map((e) =>
-              "http://10.0.2.2:3000/uploads/artworks/preview/${e['preview_url']}")
+              // "http://10.0.2.2:3000/uploads/artworks/preview/${e['preview_url']}")
               // "http://192.168.6.16:3000/uploads/artworks/preview/${e['preview_url']}")
               // "https://murally-ultramicroscopical-mittie.ngrok-free.dev/uploads/artworks/preview/${e['preview_url']}")
               // "http://localhost:3000/uploads/artworks/preview/${e['preview_url']}")
-              // "http://192.168.137.241:3000/uploads/artworks/preview/${e['preview_url']}")
+              "http://192.168.137.188:3000/uploads/artworks/preview/${e['preview_url']}")
           .toList();
     }
 
