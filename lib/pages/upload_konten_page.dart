@@ -443,7 +443,11 @@ class _UploadKontenPageState extends State<UploadKontenPage> {
                       reloadData: loadUserData,
                     ),
                   ),
-                );
+                ).then((changed) {
+                  if (changed == true) {
+                    loadContent(); // 🔥 RELOAD API
+                  }
+              });
               },
               child: buildContentItem(item),
             );

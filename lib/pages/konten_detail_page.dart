@@ -147,7 +147,10 @@ class _KontenDetailPage extends State<KontenDetailPage> {
       setState(() {
         comments.removeAt(index);
         totalComment -= 1;
+        kontenState['total_comment'] = totalComment;
+        hasChanged = true; // 🔥 WAJIB
       });
+
     } catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Gagal menghapus komentar")),
@@ -171,8 +174,11 @@ class _KontenDetailPage extends State<KontenDetailPage> {
 
       setState(() {
         totalComment += 1;
+        kontenState['total_comment'] = totalComment;
+        hasChanged = true; // 🔥 WAJIB
         commentCtrl.clear();
       });
+
 
       loadComments();
     } catch (e) {
@@ -298,7 +304,7 @@ class _KontenDetailPage extends State<KontenDetailPage> {
               children: [
                 // 🔙 BACK BUTTON
                 InkWell(
-                  onTap: () => Navigator.pop(context),
+                  onTap: () => Navigator.pop(context, hasChanged),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: const [

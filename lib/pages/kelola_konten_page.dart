@@ -448,7 +448,11 @@ class _KelolaKontenPageState extends State<KelolaKontenPage> {
                                         currentMenu: "konten",
                                       ),
                                     ),
-                                  );
+                                  ).then((changed) {
+                                    if (changed == true) {
+                                      loadAllContents(); // 🔥 RELOAD API
+                                    }
+                                  });
                                 },
                                 child: buildAdminContentItem(item),
                               );

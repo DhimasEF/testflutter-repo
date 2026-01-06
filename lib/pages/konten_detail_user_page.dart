@@ -193,6 +193,8 @@ class _KontenDetailPage extends State<KontenDetailPage> {
       setState(() {
         comments.removeAt(index);
         totalComment -= 1;
+        kontenState['total_comment'] = totalComment;
+        hasChanged = true; // 🔥
       });
     } catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -217,16 +219,17 @@ class _KontenDetailPage extends State<KontenDetailPage> {
 
       setState(() {
         totalComment += 1;
+        kontenState['total_comment'] = totalComment; // optional UI sync
+        hasChanged = true; // 🔥 INI KUNCI
         commentCtrl.clear();
       });
-
       loadComments();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Gagal mengirim komentar")),
-      );
-    }
-  }
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Gagal mengirim komentar")),
+          );
+        }
+      }
   
   void showBuyModal(BuildContext context, Map<String, dynamic> konten) {
     showModalBottomSheet(

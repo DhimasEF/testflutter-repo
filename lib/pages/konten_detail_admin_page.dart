@@ -161,6 +161,8 @@ class _KontenDetailPage extends State<KontenDetailPage> {
       setState(() {
         comments.removeAt(index);
         totalComment -= 1;
+        kontenState['total_comment'] = totalComment;
+        hasChanged = true; // 🔥
       });
     } catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -185,6 +187,8 @@ class _KontenDetailPage extends State<KontenDetailPage> {
 
       setState(() {
         totalComment += 1;
+        kontenState['total_comment'] = totalComment; // optional UI sync
+        hasChanged = true; // 🔥 INI KUNCI
         commentCtrl.clear();
       });
 
