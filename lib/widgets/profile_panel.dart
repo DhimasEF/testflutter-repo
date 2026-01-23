@@ -59,9 +59,8 @@ Future<void> showProfilePanel(
                     CircleAvatar(
                       radius: 50,
                       backgroundImage: avatarUrl != null
-                          ? NetworkImage(avatarUrl)
-                          : const AssetImage('assets/default.jpg')
-                              as ImageProvider,
+                        ? NetworkImage('$avatarUrl?t=${DateTime.now().millisecondsSinceEpoch}')
+                        : const AssetImage('assets/default.jpg') as ImageProvider,
                     ),
                     //if (uploadAvatarWeb != null)
                     // if (uploadAvatarMobile != null)
@@ -70,15 +69,14 @@ Future<void> showProfilePanel(
                         right: 4,
                         child: InkWell(
                           onTap: () async {
-                            SharedPreferences prefs =
-                                await SharedPreferences.getInstance();
+                            SharedPreferences prefs = await SharedPreferences.getInstance();
                             int userId = prefs.getInt('id_user') ?? 0;
 
-                            await ProfileService.uploadAvatar(userId);
+                            final newAvatar = await ProfileService.uploadAvatar(userId);
 
                             Navigator.pop(context);
 
-                            if (reloadData != null) {
+                            if (newAvatar != null && reloadData != null) {
                               await reloadData();
                             }
                           },
